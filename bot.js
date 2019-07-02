@@ -99,6 +99,8 @@ function getLeaveBalance(session,val){
             session.endDialog();
           
         
+            
+
           
            // setResponse(session, response.body);
         }
@@ -169,7 +171,7 @@ function getCardsAttachmentsForLeavetype(data)
                                             "type": "TextBlock",
                                             "size": "Medium",
                                             "weight": "Bolder",
-                                            "text": "test",
+                                            "text": data[i].LEAVE_TYPE,
                                             
                                         },
                                     
@@ -182,7 +184,7 @@ function getCardsAttachmentsForLeavetype(data)
                                         {
                                             "type": "TextBlock",
                                             "size": "Medium",                                           
-                                            "text": "30",
+                                            "text": ""+ data[i].LeaveBalance +"",
                                         
                                         }
                                     ],
