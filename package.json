@@ -1,0 +1,24 @@
+{
+  "name": "VendorDetailsBot",
+  "version": "1.0.0",
+  "dependencies": {
+    "@azure/cosmos": "^2.1.5",
+    "botbuilder": "^3.13.1",
+    "botbuilder-azure": "^3.1.0",
+    "dotenv-extended": "^2.0.0",
+    "line-by-line": "^0.1.6",
+    "natural": "^0.6.2",
+    "nodemon": "^1.18.9",
+    "request": "^2.88.0",
+    "request-promise": "^4.2.2",
+    "restify": "^4.3.0",
+    "tslib": "^1.9.3"
+  },
+  "description": "A conversation inside of a bot can contain one or more dialogs. A dialog is designed to be a self-contained set of interactions to collect information from a user, or perform an action on her behalf. The bot maintains a stack of dialogs, meaning that as each one completes, it's popped off the stack, and control returns to the one prior. You can add dialogs to the stack by calling `session.beginDialog` or `session.replaceDialog`, and ended by using `session.endDialog` or `session.endDialogWithResult`.",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC"
+}
