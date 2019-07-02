@@ -99,11 +99,6 @@ function getLeaveBalance(session,val){
             session.endDialog();
           
         
-            var msg = new builder.Message()
-                .addAttachment(card)
-            session.send(msg);
-            session.endDialog();
-
           
            // setResponse(session, response.body);
         }
