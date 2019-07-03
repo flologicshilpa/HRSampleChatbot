@@ -399,7 +399,7 @@ function getHolidayList(session, val) {
 function holidayList(session, data) {
    
     var data=data.body;
-    console.log("holidaylis........................................................",data);
+//     console.log("holidaylis........................................................",data);
     var attachments=[];
     var i;
     for(i=0;i<data.length;i++)
@@ -440,8 +440,9 @@ function getCardsAttachmentsForLeavetype(data)
     var i;
     console.log(data.length);
     
+    
 
-    for(i=0;i<data.length;i++)
+    for(i=0;i<5;i++)
     {      
         var card = {
             'contentType': 'application/vnd.microsoft.card.adaptive',
@@ -526,7 +527,7 @@ function getCardsAttachmentsForApproval(data)
     console.log(data.length);
     
 
-    for(i=0;i<data.length;i++)
+    for(i=0;i<5;i++)
     {      
        
         var card = {
@@ -606,7 +607,7 @@ function getCardsAttachmentsForLeaveStatus(data)
     console.log(data.length);
     
 
-    for(i=0;i<data.length;i++)
+    for(i=0;i<5;i++)
     {      
        
         var card = {
