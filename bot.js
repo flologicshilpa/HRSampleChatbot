@@ -405,14 +405,17 @@ function holidayList(session, data) {
     for(i=0;i<data.length;i++)
     {
         var card = {
-            "contentType": "application/vnd.microsoft.card.hero",
+            "contentType": "application/vnd.microsoft.card.thumbnail",
             "content": {
                 "title": "**"+ data[i].holidayName + "**",
                 "subtitle": data[i].holidaydate +"(" + data[i].Day + ")",
-                "text":data[i].information,
+                "text":data[i].information,                
                 "images": [
-                    {
-                        "url": data[i].ImageUrl
+                    {   
+                        "type": "Image",
+                         "style": "Person",                        
+                         "size": "small",       
+                         "url": data[i].ImageUrl
                     }
                 ]
             }
