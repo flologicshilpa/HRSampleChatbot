@@ -75,7 +75,7 @@ bot.dialog('startingDialog', [
 
 function setLeaveOption(session)
 {
-    builder.Prompts.choice(session, "What I can help you with today?", "Leave Balance|Approval List|My Leave Status|Apply For Leave|Leave Policy", { listStyle: builder.ListStyle.button });
+    builder.Prompts.choice(session, "                    What I can help you with today?", "Leave Balance|Approval List|My Leave Status|Apply For Leave|Leave Policy", { listStyle: builder.ListStyle.button });
    
 }
 
