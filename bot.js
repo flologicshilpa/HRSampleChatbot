@@ -386,7 +386,7 @@ function getHolidayList(session, val) {
             } else if (holidaytype !== "" && holidaytype !== undefined) {
                 holidayList(session, response);
             } else {
-                holidayListAll(session, response);
+                holidayList(session, response);
             }
         }
         else {
@@ -433,9 +433,7 @@ function holidayList(session, data) {
 
 }
 
-function holidayListAll(session, data) {
-    console.log("holidaylis=====================");
-}
+
 
 function getCardsAttachmentsForLeavetype(data)
 {
