@@ -16,7 +16,7 @@ var accessToken = 'a8be5eed29a84393b073ec02b5cd5e79';  //Replace access token he
 var baseUrl = "https://api.api.ai/v1/";
 var baseWebUrl = "https://flologicbots.com:105/api/";
 var empCode = "78010182";
-
+var id;
 
 var inMemoryStorage = new builder.MemoryBotStorage();
 
@@ -29,13 +29,15 @@ const bot = module.exports = new builder.UniversalBot(connector, function (sessi
 //Get ticket Dialog
 bot.dialog('startingDialog', [
     function (session, args, next) {
-
+        var jsonData = JSON.stringify(session.message);
+        var jsonParse = JSON.parse(jsonData);
+        id=jsonParse.address.conversation.id;
         var requestData = {
             "query": session.message.text,
             "lang": "en",
-            "sessionId": "123456"
+            "sessionId": id
         }
-    
+
         var headers = { 'Content-Type': 'application/json; charset=utf-8', 'Authorization': 'Bearer ' + accessToken }
 
         // Configure the request
@@ -45,37 +47,36 @@ bot.dialog('startingDialog', [
             headers: headers,
             json: requestData
         }
-    
+
         Request(options, function (error, response, body) {
             if (!error && response.statusCode == 200) {
                 var res_action = response.body.result.action;
-    
+
                 if (res_action === "balance") {
-                    getLeaveBalance(session,response.body);
+                    getLeaveBalance(session, response.body);
                 }
-                else if(res_action=="leave")
-                {
+                else if (res_action == "leave") {
                     session.beginDialog('setLeaveOption');
                 }
-                else if(res_action=="approval")
-                {
+                else if (res_action == "approval") {
                     getApproval(session);
                 }
-                else if(res_action=="status")
-                {
+                else if (res_action == "status") {
                     getStatus(session);
                 }
-                else if(res_action=="leaveapplied")
-                {
-                        setLeaveApply(session,response.body);
-                }  
-                else if (res_action === "holiday") {
-                    getHolidayList(session,response.body);
-                } 
-                else {
-                    setResponse(session,response.body);
+                else if (res_action == "leaveapplied") {
+                    setLeaveApply(session, response.body);
                 }
-                
+                else if (res_action === "holiday") {
+                    getHolidayList(session, response.body);
+                }
+                else if (res_action === "travelPolicy") {
+                    setTravelPolicy(session, response.body);
+                }
+                else {
+                    setResponse(session, response.body);
+                }
+
             }
             else {
                 console.log("enddialog");
@@ -90,64 +91,64 @@ bot.dialog('setLeaveOption', [
     function (session, args, next) {
         builder.Prompts.choice(session, "        What I can help you with today?        ", "Leave Balance|Approval List|My Leave Status|Apply for Leave|Leave Policy", { listStyle: builder.ListStyle.button });
     },
-    function(session,results){
+    function (session, results) {
 
-      var str = results.response.entity;
-      var requestData = {
-        "query": str,
-        "lang": "en",
-        "sessionId": "123456"
-    }
+        var str = results.response.entity;
+        var requestData = {
+            "query": str,
+            "lang": "en",
+            "sessionId": "123456"
+        }
 
-    // Set the headers
-    var headers = { 'Content-Type': 'application/json; charset=utf-8', 'Authorization': 'Bearer ' + accessToken }
+        // Set the headers
+        var headers = { 'Content-Type': 'application/json; charset=utf-8', 'Authorization': 'Bearer ' + accessToken }
 
-    // Configure the request
-    var options = {
-        url: baseUrl + "query?v=20150910",
-        method: 'POST',
-        headers: headers,
-        json: requestData
-    }
+        // Configure the request
+        var options = {
+            url: baseUrl + "query?v=20150910",
+            method: 'POST',
+            headers: headers,
+            json: requestData
+        }
 
-    Request(options, function (error, response, body) {
-        if (!error && response.statusCode == 200) {
-            var res_action = response.body.result.action;
+        Request(options, function (error, response, body) {
+            if (!error && response.statusCode == 200) {
+                var res_action = response.body.result.action;
 
-            if (res_action === "balance") {
-                getLeaveBalance(session,response.body);
-            }
-            else if(res_action=="approval")
-            {
-                getApproval(session);
-            }  
-            else if(res_action=="status")
-            {
+                if (res_action === "balance") {
+                    getLeaveBalance(session, response.body);
+                }
+                else if (res_action === "approval") {
+                    getApproval(session);
+                }
+                else if (res_action === "status") {
                     getStatus(session);
-            }  
-            else if(res_action=="leaveapplied")
-            {
-                    setLeaveApply(session,response.body);
-            }      
-            else {
-                setResponse(session, response.body);
+                }
+                else if (res_action === "leaveapplied") {
+                    setLeaveApply(session, response.body);
+                }
+                else if (res_action === "holiday") {
+                    getHolidayList(session, response.body);
+                }
+                else {
+                    setResponse(session, response.body);
+                }
+
             }
-            
-        }
-        else {
-            console.log("enddialog");
-            session.endDialog();
-        }
-    });//end           
+            else {
+                console.log("enddialog");
+                session.endDialog();
+            }
+        });//end           
     }
 ])
 
-function getLeaveBalance(session,val){
+function getLeaveBalance(session, val) {
 
     var leaveBalance = baseWebUrl + "Leave/getLeaveBalance"
 
     var requestData = {
-        "EmpCode": empCode, 
+        "EmpCode": empCode,
         "LEAVE_TYPE": val.result.parameters.leavetype
     }
 
@@ -166,20 +167,20 @@ function getLeaveBalance(session,val){
         if (!error && response.statusCode == 200) {
 
             console.log(response.body);
-            
+
             var sendMessage = new builder.Message(session);
             var attachments = [];
-            
-            var attachments=getCardsAttachmentsForLeavetype(response.body);
+
+            var attachments = getCardsAttachmentsForLeavetype(response.body);
             sendMessage.attachments(attachments);
             session.send(sendMessage);
             session.endDialog();
-          
-        
-            
 
-          
-           // setResponse(session, response.body);
+
+
+
+
+            // setResponse(session, response.body);
         }
         else {
             console.log("enddialog");
@@ -192,11 +193,11 @@ function getLeaveBalance(session,val){
 function getApproval(session) {
 
     var requestData = {
-        "EmpCode": "78010125", 
-         "ProcessType": "Leave"
+        "EmpCode": "78010125",
+        "ProcessType": "Leave"
     }
 
-    var headers = { 'Content-Type': 'application/json; charset=utf-8'}
+    var headers = { 'Content-Type': 'application/json; charset=utf-8' }
 
     // Configure the request
     var options = {
@@ -205,20 +206,20 @@ function getApproval(session) {
         headers: headers,
         json: requestData
     }
- 
+
     Request(options, function (error, response, body) {
         if (!error && response.statusCode == 200) {
 
             console.log(response.body);
-            
+
             var sendMessage = new builder.Message(session);
             var attachments = [];
             sendMessage.attachmentLayout(builder.AttachmentLayout.carousel);
-            var attachments=getCardsAttachmentsForApproval(response.body);
+            var attachments = getCardsAttachmentsForApproval(response.body);
             sendMessage.attachments(attachments);
-            session.send(sendMessage);
-            session.endDialog();   
-           // setResponse(session, response.body);
+            session.send(sendMessage);            
+            session.endDialog();
+            // setResponse(session, response.body);
         }
         else {
             console.log("enddialog");
@@ -226,7 +227,7 @@ function getApproval(session) {
         }
     });
 
-   
+
 }
 
 //Get Leave Status
@@ -234,11 +235,11 @@ function getApproval(session) {
 function getStatus(session) {
 
     var requestData = {
-        EmpCode: empCode, 
+        EmpCode: empCode,
         ProcessType: "Leave"
     }
 
-    var headers = { 'Content-Type': 'application/json; charset=utf-8'}
+    var headers = { 'Content-Type': 'application/json; charset=utf-8' }
 
     // Configure the request
     var options = {
@@ -247,20 +248,20 @@ function getStatus(session) {
         headers: headers,
         json: requestData
     }
- 
+
     Request(options, function (error, response, body) {
         if (!error && response.statusCode == 200) {
 
             console.log(response.body);
-            
+
             var sendMessage = new builder.Message(session);
             var attachments = [];
             sendMessage.attachmentLayout(builder.AttachmentLayout.carousel);
-            var attachments=getCardsAttachmentsForLeaveStatus(response.body);
+            var attachments = getCardsAttachmentsForLeaveStatus(response.body);
             sendMessage.attachments(attachments);
             session.send(sendMessage);
-            session.endDialog();   
-           // setResponse(session, response.body);
+            session.endDialog();
+            // setResponse(session, response.body);
         }
         else {
             console.log("enddialog");
@@ -268,66 +269,62 @@ function getStatus(session) {
         }
     });
 
-   
+
 }
 
 //apply for leave
 
-function setLeaveApply(session,data)
-{
+function setLeaveApply(session, data) {
     var actioncomp = data.result.actionIncomplete;
-    console.log("actioncomp",actioncomp);
+    console.log("actioncomp", actioncomp);
 
     if (actioncomp == false) {
-        coformationLeaveSubmit(session,data);
+        coformationLeaveSubmit(session, data);
     } else {
-        setResponse(session,data);
+        setResponse(session, data);
     }
 
 }
 
-function coformationLeaveSubmit(session,data)
-{
-    session.conversationData.formdate=data.result.parameters.fromdate;
-    session.conversationData.todate=data.result.parameters.todate;
-    session.conversationData.leavetype=data.result.parameters.leavetype;
+function coformationLeaveSubmit(session, data) {
+    session.conversationData.formdate = data.result.parameters.fromdate;
+    session.conversationData.todate = data.result.parameters.todate;
+    session.conversationData.leavetype = data.result.parameters.leavetype;
     // //respose = $.parseJSON(data);
     // var formdate = data.result.parameters.fromdate;
-     var todate = data.result.parameters.todate;
+    var todate = data.result.parameters.todate;
     // var leavetype = data.result.parameters.leavetype;
 
     if (todate == "") {
-       // todate = formdate;
-        session.conversationData.todate=session.conversationData.formdate
+        // todate = formdate;
+        session.conversationData.todate = session.conversationData.formdate
     }
 
     session.beginDialog('applyforleave');
-    
-    
+
+
 }
 
 bot.dialog('applyforleave', [
     function (session, args, next) {
-        var textmessage="Your leave request for "+  session.conversationData.leavetype +"\r\n Start Date: **"+ session.conversationData.formdate + "** \r\n To Date: **"+session.conversationData.todate +"**";
+        var textmessage = "Your leave request for " + session.conversationData.leavetype + "\r\n Start Date: **" + session.conversationData.formdate + "** \r\n To Date: **" + session.conversationData.todate + "**";
         // session.send(textmessage);
-         builder.Prompts.confirm(session,textmessage +"\r\n will be processed? (Y/N)"); 
+        builder.Prompts.confirm(session, textmessage + "\r\n will be processed? (Y/N)");
     },
-    function(session,results){      
-      if(results.response==true)
-      {
-          session.send("Your leave application submited");
-          session.endDialog();
-      }
-      else
-      {
-        session.send("Your leave application not submited");
-        session.endDialog();
-      }
+    function (session, results) {
+        if (results.response == true) {
+            session.send("Your leave application submited");
+            session.endDialog();
+        }
+        else {
+            session.send("Your leave application not submited");
+            session.endDialog();
+        }
     }
- 
+
 ]);
 
-function setResponse(session,val) {
+function setResponse(session, val) {
     session.send(val.result.fulfillment.speech);
     console.log("actula result", val.result.fulfillment.speech);
 }
@@ -397,30 +394,29 @@ function getHolidayList(session, val) {
 }
 
 function holidayList(session, data) {
-   
-    var data=data.body;
-//     console.log("holidaylis........................................................",data);
-    var attachments=[];
+
+    var data = data.body;
+
+    var attachments = [];
     var i;
-    for(i=0;i<data.length;i++)
-    {
+    for (i = 0; i < data.length; i++) {
         var card = {
             "contentType": "application/vnd.microsoft.card.thumbnail",
             "content": {
-                "title": "**"+ data[i].holidayName + "**",
-                "subtitle": data[i].holidaydate +"(" + data[i].Day + ")",
-                "text":data[i].information,                
+                "title": "**" + data[i].holidayName + "**",
+                "subtitle": data[i].holidaydate + "(" + data[i].Day + ")",
+                "text": data[i].information,
                 "images": [
-                    {   
+                    {
                         "type": "Image",
-                         "style": "Person",                        
-                         "size": "small",       
-                         "url": data[i].ImageUrl
+                        "style": "Person",
+                        "size": "small",
+                        "url": data[i].ImageUrl
                     }
                 ]
             }
         }
-        attachments.push(card); 
+        attachments.push(card);
 
     }
 
@@ -428,30 +424,26 @@ function holidayList(session, data) {
     var sendMessage = new builder.Message(session);
     sendMessage.attachments(attachments);
     session.send(sendMessage);
-    session.endDialog();   
-    
+    session.endDialog();
+
 
 }
 
 
-
-function getCardsAttachmentsForLeavetype(data)
-{
-    var attachments=[];
+function getCardsAttachmentsForLeavetype(data) {
+    var attachments = [];
     var i;
     console.log(data.length);
-    
-    
 
-    for(i=0;i<5;i++)
-    {      
+
+    for (i = 0; i < data.length; i++) {
         var card = {
             'contentType': 'application/vnd.microsoft.card.adaptive',
             'content': {
                 "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
                 "type": "AdaptiveCard",
                 "version": "1.0",
-                "body": [                    
+                "body": [
                     {
                         "type": "Container",
                         "items": [
@@ -472,72 +464,71 @@ function getCardsAttachmentsForLeavetype(data)
                                         "width": "auto"
                                     }
 
-                                ] }
-                            ]
+                                ]
+                            }
+                        ]
                     },
                     {
                         "type": "Container",
-                        "seprator":"true",
+                        "seprator": "true",
                         "items": [
                             {
-                            "type": "ColumnSet",
-                            "columns": [
-                                {
-                                    "type": "Column",
-                                    "items": [
-                                        {
-                                            "type": "TextBlock",
-                                            "size": "Medium",
-                                            "weight": "Bolder",
-                                            "text": data[i].LEAVE_TYPE,
-                                            
-                                        },
-                                    
-                                    ],
-                                    "width": 3
-                                },
-                                {
-                                    "type": "Column",
-                                    "items": [
-                                        {
-                                            "type": "TextBlock",
-                                            "size": "Medium",                                           
-                                            "text": ""+ data[i].LeaveBalance +"",
-                                        
-                                        }
-                                    ],
-                                    "width": 7
-                                }
-                           
-                            ] }
+                                "type": "ColumnSet",
+                                "columns": [
+                                    {
+                                        "type": "Column",
+                                        "items": [
+                                            {
+                                                "type": "TextBlock",
+                                                "size": "Medium",
+                                                "weight": "Bolder",
+                                                "text": data[i].LEAVE_TYPE,
+
+                                            },
+
+                                        ],
+                                        "width": 3
+                                    },
+                                    {
+                                        "type": "Column",
+                                        "items": [
+                                            {
+                                                "type": "TextBlock",
+                                                "size": "Medium",
+                                                "text": "" + data[i].LeaveBalance + "",
+
+                                            }
+                                        ],
+                                        "width": 7
+                                    }
+
+                                ]
+                            }
                         ]
-                    }  
+                    }
                 ]//body close
-          
+
             }//content
-            };
-        attachments.push(card); 
+        };
+        attachments.push(card);
     }
     return attachments;
 }
-    
-function getCardsAttachmentsForApproval(data)
-{
-    var attachments=[];
+
+function getCardsAttachmentsForApproval(data) {
+    var attachments = [];
     var i;
     console.log(data.length);
-    
 
-    for(i=0;i<5;i++)
-    {      
-       
+
+    for (i = 0; i < 10; i++) {
         var card = {
             'contentType': 'application/vnd.microsoft.card.adaptive',
             'content': {
                 "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
                 "type": "AdaptiveCard",
                 "version": "1.0",
-                "body": [                    
+                "body": [
                     {
                         "type": "Container",
                         "items": [
@@ -553,71 +544,70 @@ function getCardsAttachmentsForApproval(data)
                                                 "weight": "Bolder",
                                                 "text": data[i].EMPLOYEE_NAME,
                                                 "wrap": true
-                                            }                                           
+                                            }
                                         ],
                                         "width": "stretch"
-                                    }                                   
+                                    }
 
-                                ] }
-                            ]
+                                ]
+                            }
+                        ]
                     },
                     {
                         "type": "Container",
                         "separator": true,
                         "type": "FactSet",
                         "facts": [
-                          {
-                            "value":data[i].DETAIL 
-                          },
-                          {
-                            "value": data[i].HEADER_INFO 
-                          },
-                          {
-                            "value": data[i].STEP_NAME 
-                          },
-                          {
-                            "value": data[i].TARGET_DATE 
-                          }
+                            {
+                                "value": data[i].DETAIL.replace('<br>', '')
+                            },
+                            {
+                                "value": data[i].HEADER_INFO
+                            },
+                            {
+                                "value": data[i].STEP_NAME
+                            },
+                            {
+                                "value": data[i].TARGET_DATE
+                            }
                         ],
-                        
+
                     },
-                     
+
                 ],//body
                 "actions": [
                     {
-                      "type": "Action.Submit",
-                      "title": "Approve",                     
+                        "type": "Action.Submit",
+                        "title": "Approve",
+                        "data":"RequestForApproval"                      
+                      
                     },
                     {
                         "type": "Action.Submit",
-                        "title": "Reject",                     
+                        "title": "Reject",
+                        "data":"RequestForReject" 
                     }]
-                  
-                
-                }//content
-            };
-            attachments.push(card);  
+
+
+            }//content
+        };
+        attachments.push(card);
     }
     return attachments;
 }
 
-function getCardsAttachmentsForLeaveStatus(data)
-{
-    var attachments=[];
+function getCardsAttachmentsForLeaveStatus(data) {
+    var attachments = [];
     var i;
-    console.log(data.length);
-    
+    for (i = 0; i < 10; i++) {
 
-    for(i=0;i<5;i++)
-    {      
-       
         var card = {
             'contentType': 'application/vnd.microsoft.card.adaptive',
             'content': {
                 "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
                 "type": "AdaptiveCard",
                 "version": "1.0",
-                "body": [                    
+                "body": [
                     {
                         "type": "Container",
                         "items": [
@@ -631,37 +621,132 @@ function getCardsAttachmentsForLeaveStatus(data)
                                                 "type": "TextBlock",
                                                 "size": "Medium",
                                                 "weight": "Bolder",
-                                                "text": data[i].DETAIL,
+                                                "text": data[i].DETAIL.replace('<br>', ''),
                                                 "wrap": true
-                                            }                                           
+                                            }
                                         ],
                                         "width": "stretch"
-                                    }                                   
+                                    }
 
-                                ] }
-                            ]
+                                ]
+                            }
+                        ]
                     },
                     {
                         "type": "Container",
                         "separator": true,
                         "type": "FactSet",
                         "facts": [
-                          {
-                            "value":data[i].EmpCode  
-                          },
-                          {
-                            "value": data[i].HEADER_INFO 
-                          },
-                          {
-                            "value": data[i].ASSIGN_DATE 
-                          }                          
-                        ]                        
-                    }                     
-                ]              
-                }//content
-            };
-            attachments.push(card);  
+                            {
+                                "value": data[i].EmpCode
+                            },
+                            {
+                                "value": data[i].HEADER_INFO
+                            },
+                            {
+                                "value": data[i].ASSIGN_DATE
+                            }
+                        ]
+                    }
+                ]
+            }//content
+        };
+        attachments.push(card);
     }
     return attachments;
+}
 
+bot.dialog('RequestForApproval', [
+    function (session, args, next)
+        {
+            session.send("Your request submited sucessfully");
+            session.endDialog();
+        } 
+])
+.triggerAction({
+    matches: /RequestForApproval/i
+});
+
+bot.dialog('RequestForReject', [
+    function (session, args, next)
+        {
+            session.send("Your request not submited at this time");
+            session.endDialog();
+        } 
+])
+.triggerAction({
+    matches: /RequestForReject/i
+});
+
+//travel Policy
+
+function setTravelPolicy(session, data) {
+    var actioncomp = data.result.actionIncomplete;
+    console.log("actioncomp", data);
+
+    if (actioncomp == false) {
+        var traveltype = data.result.parameters.traveltype;
+        setTravelPolicyDetails(session, traveltype);
+    } else {
+        session.beginDialog('setTravelPolicy');
+
+    }
+}
+
+bot.dialog('setTravelPolicy', [
+    function (session, args, next) {
+        builder.Prompts.choice(session, "        What I can help you with today?        ", "Air Travel|Car Rental|Personal Car|Taxis|Hotels|Meals", { listStyle: builder.ListStyle.button });
+    },
+    function (session, results) {
+        var traveltype = results.response.entity;
+        setTravelPolicyDetails(session, traveltype);
+       
+    }
+    
+]);
+
+function setTravelPolicyDetails(session, data) {
+    var traveltype = data;
+    var jsonLeavePolicy = {
+        "traveltype": {
+            "Air Travel": [
+                { "parameter": "3.1 All employees traveling via air carrier must utilize Lowest Fare Routing (LFR).  LFR is quoted logical lowest fare for the business trip, which will (where possible):" },
+                { "parameter": "a) Provide cost savings for the round trip air ticket." },
+                { "parameter": "b) Result in total layover time not exceeding one hour." },
+                { "parameter": "c) Increase the one-way total elapsed trip time by no more than two and one-half hours." },
+                { "parameter": "d) Require no more than one interim stop each way." },
+                { "parameter": "3.2 Exceptions to this policy statement will be allowed with approval by the employees’ supervisor so that additional cost is authorized." },
+            ],
+            "Car Rental": [
+                { "parameter": "4.1 Please note that car rental discounts are base on volume.  The travel agent will be able to tell you which rental agency we use at the time you make your reservations." },
+                { "parameter": "4.2 Insurance should not be purchased from the rental agency and will not be reimbursed.  All drivers must hold a valid drivers license or a car may not be rented." },
+                { "parameter": "4.3 Car rentals are generally the most expensive mode of transportation and should only be used when the nature of the trip or the locations of the customer being visited is such that the use of local transportation (i.e. taxis or limousines ) is not practical or would be more expensive." }
+            ],
+            "Personal Car": [
+                { "parameter": "Hmmm.. I guess I'm not trained to answer this question. I will try my best next time!" },
+            ],
+            "Taxis": [
+                { "parameter": "Hmmm.. I guess I'm not trained to answer this question. I will try my best next time!" },
+            ],
+            "Hotels": [
+                { "parameter": "Hmmm.. I guess I'm not trained to answer this question. I will try my best next time!" },
+            ],
+            "Meals": [
+                { "parameter": "Hmmm.. I guess I'm not trained to answer this question. I will try my best next time!" },
+            ]
+        }
+    }
+    if (jsonLeavePolicy) {
+
+        var value = "";
+        var result = "";
+        var leavePolicy = "**" + traveltype + "**" + "\r\n";
+        var val = jsonLeavePolicy.traveltype[traveltype];
+        for (i = 0; i < val.length; i++) {
+            leavePolicy = "\r\n" + leavePolicy + "\r\n" + val[i].parameter;
+        }
+        session.send(leavePolicy);
+        session.endDialog();
+    }
+  
 }
