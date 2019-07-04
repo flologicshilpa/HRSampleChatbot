@@ -31,11 +31,11 @@ bot.dialog('startingDialog', [
     function (session, args, next) {
         var jsonData = JSON.stringify(session.message);
         var jsonParse = JSON.parse(jsonData);
-        id=jsonParse.address.conversation.id;
+        id= jsonParse.address.conversation.id;
         var requestData = {
             "query": session.message.text,
             "lang": "en",
-            "sessionId": id
+            "sessionId": "123456"
         }
 
         var headers = { 'Content-Type': 'application/json; charset=utf-8', 'Authorization': 'Bearer ' + accessToken }
@@ -71,7 +71,8 @@ bot.dialog('startingDialog', [
                     getHolidayList(session, response.body);
                 }
                 else if (res_action === "travelPolicy") {
-                    setTravelPolicy(session, response.body);
+                    //setTravelPolicy(session, response.body);
+                    session.beginDialog('setTravelPolicy');
                 }
                 else {
                     setResponse(session, response.body);
@@ -133,7 +134,6 @@ bot.dialog('setLeaveOption', [
                 else {
                     setResponse(session, response.body);
                 }
-
             }
             else {
                 console.log("enddialog");
@@ -166,8 +166,6 @@ function getLeaveBalance(session, val) {
     Request(options, function (error, response, body) {
         if (!error && response.statusCode == 200) {
 
-            console.log(response.body);
-
             var sendMessage = new builder.Message(session);
             var attachments = [];
 
@@ -175,11 +173,6 @@ function getLeaveBalance(session, val) {
             sendMessage.attachments(attachments);
             session.send(sendMessage);
             session.endDialog();
-
-
-
-
-
             // setResponse(session, response.body);
         }
         else {
@@ -231,7 +224,6 @@ function getApproval(session) {
 }
 
 //Get Leave Status
-
 function getStatus(session) {
 
     var requestData = {
@@ -273,7 +265,6 @@ function getStatus(session) {
 }
 
 //apply for leave
-
 function setLeaveApply(session, data) {
     var actioncomp = data.result.actionIncomplete;
     console.log("actioncomp", actioncomp);
@@ -330,7 +321,6 @@ function setResponse(session, val) {
 }
 
 //holiday code
-
 function getHolidayList(session, val) {
     var date = "", month = "", holidaytype = "", currentmonth = "", commonentity = "", dateperiod = "";
     date = val.result.parameters.date;
@@ -429,13 +419,12 @@ function holidayList(session, data) {
 
 }
 
-
 function getCardsAttachmentsForLeavetype(data) {
     var attachments = [];
     var i;
     console.log(data.length);
 
-      
+
     for (i = 0; i < data.length; i++) {
         var card = {
             'contentType': 'application/vnd.microsoft.card.adaptive',
@@ -444,30 +433,30 @@ function getCardsAttachmentsForLeavetype(data) {
                 "type": "AdaptiveCard",
                 "version": "1.0",
                 "body": [
-//                     {
-//                         "type": "Container",
-//                         "items": [
-//                             {
-//                                 "type": "ColumnSet",
-//                                 "columns": [
-//                                     {
-//                                         "type": "Column",
-//                                         "items": [
-//                                             {
-//                                                 "type": "TextBlock",
-//                                                 "size": "Medium",
-//                                                 "weight": "Bolder",
-//                                                 "text": "Available Leave Balance",
-//                                                 "wrap": true
-//                                             }
-//                                         ],
-//                                         "width": "auto"
-//                                     }
+                    {
+                        "type": "Container",
+                        "items": [
+                            {
+                                "type": "ColumnSet",
+                                "columns": [
+                                    {
+                                        "type": "Column",
+                                        "items": [
+                                            {
+                                                "type": "TextBlock",
+                                                "size": "Medium",
+                                                "weight": "Bolder",
+                                                "text": "Available Leave Balance",
+                                                "wrap": true
+                                            }
+                                        ],
+                                        "width": "auto"
+                                    }
 
-//                                 ]
-//                             }
-//                         ]
-//                     },
+                                ]
+                            }
+                        ]
+                    },
                     {
                         "type": "Container",
                         "seprator": "true",
@@ -517,11 +506,7 @@ function getCardsAttachmentsForLeavetype(data) {
 
 function getCardsAttachmentsForApproval(data) {
     var attachments = [];
-    var i;
-    console.log(data.length);
-
-
-    for (i = 0; i < 10; i++) {
+    for (var i = 0; i < 10; i++) {
         var card = {
             'contentType': 'application/vnd.microsoft.card.adaptive',
             'content': {
@@ -598,8 +583,7 @@ function getCardsAttachmentsForApproval(data) {
 
 function getCardsAttachmentsForLeaveStatus(data) {
     var attachments = [];
-    var i;
-    for (i = 0; i < 10; i++) {
+    for (var i = 0; i < 10; i++) {
 
         var card = {
             'contentType': 'application/vnd.microsoft.card.adaptive',
@@ -678,31 +662,44 @@ bot.dialog('RequestForReject', [
     matches: /RequestForReject/i
 });
 
-//travel Policy
-
-function setTravelPolicy(session, data) {
-    var actioncomp = data.result.actionIncomplete;
-    console.log("actioncomp", data);
-
-    if (actioncomp == false) {
-        var traveltype = data.result.parameters.traveltype;
-        setTravelPolicyDetails(session, traveltype);
-    } else {
-        session.beginDialog('setTravelPolicy');
-
-    }
-}
-
 bot.dialog('setTravelPolicy', [
     function (session, args, next) {
         builder.Prompts.choice(session, "        What I can help you with today?        ", "Air Travel|Car Rental|Personal Car|Taxis|Hotels|Meals", { listStyle: builder.ListStyle.button });
     },
     function (session, results) {
-        var traveltype = results.response.entity;
-        setTravelPolicyDetails(session, traveltype);
-       
+
+        var requestData = {
+            "query": session.message.text,
+            "lang": "en",
+            "sessionId": "123456"
+        }
+
+        // Set the headers
+        var headers = { 'Content-Type': 'application/json; charset=utf-8', 'Authorization': 'Bearer ' + accessToken }
+
+        // Configure the request
+        var options = {
+            url: baseUrl + "query?v=20150910",
+            method: 'POST',
+            headers: headers,
+            json: requestData
+        }
+
+        Request(options, function (error, response, body) {
+            if (!error && response.statusCode == 200) {
+                console.log(response.body);
+                var actioncomp = response.body.result.actionIncomplete;
+                if(actioncomp === false){
+                    var traveltype = results.response.entity;
+                    setTravelPolicyDetails(session, traveltype);
+                }
+            }
+            else {
+                console.log("enddialog");
+                session.endDialog();
+            }
+        });//end           
     }
-    
 ]);
 
 function setTravelPolicyDetails(session, data) {
@@ -715,7 +712,7 @@ function setTravelPolicyDetails(session, data) {
                 { "parameter": "b) Result in total layover time not exceeding one hour." },
                 { "parameter": "c) Increase the one-way total elapsed trip time by no more than two and one-half hours." },
                 { "parameter": "d) Require no more than one interim stop each way." },
-                { "parameter": "3.2 Exceptions to this policy statement will be allowed with approval by the employees’ supervisor so that additional cost is authorized." },
+                { "parameter": "3.2 Exceptions to this policy statement will be allowed with approval by the employeesâ€™ supervisor so that additional cost is authorized." },
             ],
             "Car Rental": [
                 { "parameter": "4.1 Please note that car rental discounts are base on volume.  The travel agent will be able to tell you which rental agency we use at the time you make your reservations." },
@@ -745,8 +742,9 @@ function setTravelPolicyDetails(session, data) {
         for (i = 0; i < val.length; i++) {
             leavePolicy = "\r\n" + leavePolicy + "\r\n" + val[i].parameter;
         }
+
         session.send(leavePolicy);
         session.endDialog();
     }
-  
+    session.endDialog();
 }
