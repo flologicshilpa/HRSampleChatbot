@@ -435,7 +435,7 @@ function getCardsAttachmentsForLeavetype(data) {
     var i;
     console.log(data.length);
 
-
+      
     for (i = 0; i < data.length; i++) {
         var card = {
             'contentType': 'application/vnd.microsoft.card.adaptive',
@@ -444,30 +444,30 @@ function getCardsAttachmentsForLeavetype(data) {
                 "type": "AdaptiveCard",
                 "version": "1.0",
                 "body": [
-                    {
-                        "type": "Container",
-                        "items": [
-                            {
-                                "type": "ColumnSet",
-                                "columns": [
-                                    {
-                                        "type": "Column",
-                                        "items": [
-                                            {
-                                                "type": "TextBlock",
-                                                "size": "Medium",
-                                                "weight": "Bolder",
-                                                "text": "Available Leave Balance",
-                                                "wrap": true
-                                            }
-                                        ],
-                                        "width": "auto"
-                                    }
+//                     {
+//                         "type": "Container",
+//                         "items": [
+//                             {
+//                                 "type": "ColumnSet",
+//                                 "columns": [
+//                                     {
+//                                         "type": "Column",
+//                                         "items": [
+//                                             {
+//                                                 "type": "TextBlock",
+//                                                 "size": "Medium",
+//                                                 "weight": "Bolder",
+//                                                 "text": "Available Leave Balance",
+//                                                 "wrap": true
+//                                             }
+//                                         ],
+//                                         "width": "auto"
+//                                     }
 
-                                ]
-                            }
-                        ]
-                    },
+//                                 ]
+//                             }
+//                         ]
+//                     },
                     {
                         "type": "Container",
                         "seprator": "true",
