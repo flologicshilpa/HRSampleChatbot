@@ -218,7 +218,7 @@ function getApproval(session) {
             var attachments = getCardsAttachmentsForApproval(response.body);
             sendMessage.attachments(attachments);
             session.send(sendMessage);            
-            session.endDialog();
+            //session.endDialog();
             // setResponse(session, response.body);
         }
         else {
