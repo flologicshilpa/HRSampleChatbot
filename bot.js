@@ -796,7 +796,7 @@ function setTravelPolicyDetails(session,data) {
 
         var value = "";
         var result = "";
-        var leavePolicy = "**" + traveltype + "**" + "<br/>";
+        var leavePolicy = "<br/> **" + traveltype + "**";
         var val = jsonLeavePolicy.traveltype[traveltype];
         console.log("length",val.length);
         for (i = 0; i < val.length; i++) {
