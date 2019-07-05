@@ -16,7 +16,7 @@ var accessToken = 'a8be5eed29a84393b073ec02b5cd5e79';  //Replace access token he
 var baseUrl = "https://api.api.ai/v1/";
 var baseWebUrl = "https://flologicbots.com:105/api/";
 var empCode = "78010182";
-var id;
+var startingid="";
 
 var inMemoryStorage = new builder.MemoryBotStorage();
 
@@ -29,15 +29,24 @@ const bot = module.exports = new builder.UniversalBot(connector, function (sessi
 //Get ticket Dialog
 bot.dialog('startingDialog', [
     function (session, args, next) {
+        
         var jsonData = JSON.stringify(session.message);
         var jsonParse = JSON.parse(jsonData);
-        id= jsonParse.address.conversation.id;
+        var conid=jsonParse.address.id
+
+        if(startingid=="")
+        {
+            startingid = getdatetime(conid);
+        }
+       
+        
         var requestData = {
             "query": session.message.text,
             "lang": "en",
-            "sessionId": "123456"
+            "sessionId": startingid
         }
 
+        console.log("Start Dialog----------------------------------",startingid);
         var headers = { 'Content-Type': 'application/json; charset=utf-8', 'Authorization': 'Bearer ' + accessToken }
 
         // Configure the request
@@ -71,10 +80,10 @@ bot.dialog('startingDialog', [
                     getHolidayList(session, response.body);
                 }
                 else if (res_action === "travelPolicy") {
-                    //setTravelPolicy(session, response.body);
-                    session.beginDialog('setTravelPolicy');
+                    setTravelPolicy(session, response.body);
                 }
                 else {
+                  
                     setResponse(session, response.body);
                 }
 
@@ -87,6 +96,21 @@ bot.dialog('startingDialog', [
     }
 
 ]);
+function getdatetime(conid)
+{
+    var currentdate = new Date(); 
+        var datetime =   currentdate.getDate() 
+                        + (currentdate.getMonth()+1)  
+                        + currentdate.getFullYear() 
+                        + currentdate.getHours()   
+                        + currentdate.getMinutes()
+                        + currentdate.getSeconds();
+
+
+     
+       var id= conid + "_"+ datetime;
+        return id;
+}
 
 bot.dialog('setLeaveOption', [
     function (session, args, next) {
@@ -134,6 +158,7 @@ bot.dialog('setLeaveOption', [
                 else {
                     setResponse(session, response.body);
                 }
+
             }
             else {
                 console.log("enddialog");
@@ -166,13 +191,21 @@ function getLeaveBalance(session, val) {
     Request(options, function (error, response, body) {
         if (!error && response.statusCode == 200) {
 
+            console.log(response.body);
+
             var sendMessage = new builder.Message(session);
             var attachments = [];
 
             var attachments = getCardsAttachmentsForLeavetype(response.body);
             sendMessage.attachments(attachments);
             session.send(sendMessage);
+            startingid="";
             session.endDialog();
+
+
+
+
+
             // setResponse(session, response.body);
         }
         else {
@@ -210,8 +243,9 @@ function getApproval(session) {
             sendMessage.attachmentLayout(builder.AttachmentLayout.carousel);
             var attachments = getCardsAttachmentsForApproval(response.body);
             sendMessage.attachments(attachments);
-            session.send(sendMessage);            
-            //session.endDialog();
+            session.send(sendMessage); 
+            startingid="";           
+            session.endDialog();
             // setResponse(session, response.body);
         }
         else {
@@ -224,6 +258,7 @@ function getApproval(session) {
 }
 
 //Get Leave Status
+
 function getStatus(session) {
 
     var requestData = {
@@ -252,6 +287,7 @@ function getStatus(session) {
             var attachments = getCardsAttachmentsForLeaveStatus(response.body);
             sendMessage.attachments(attachments);
             session.send(sendMessage);
+            startingid="";
             session.endDialog();
             // setResponse(session, response.body);
         }
@@ -265,6 +301,7 @@ function getStatus(session) {
 }
 
 //apply for leave
+
 function setLeaveApply(session, data) {
     var actioncomp = data.result.actionIncomplete;
     console.log("actioncomp", actioncomp);
@@ -272,7 +309,9 @@ function setLeaveApply(session, data) {
     if (actioncomp == false) {
         coformationLeaveSubmit(session, data);
     } else {
-        setResponse(session, data);
+      
+        session.send(data.result.fulfillment.speech);
+        //setResponse(session, data);
     }
 
 }
@@ -305,10 +344,12 @@ bot.dialog('applyforleave', [
     function (session, results) {
         if (results.response == true) {
             session.send("Your leave application submited");
+            
             session.endDialog();
         }
         else {
             session.send("Your leave application not submited");
+           
             session.endDialog();
         }
     }
@@ -318,9 +359,13 @@ bot.dialog('applyforleave', [
 function setResponse(session, val) {
     session.send(val.result.fulfillment.speech);
     console.log("actula result", val.result.fulfillment.speech);
+    startingid="";
+    session.endDialog();
 }
 
+
 //holiday code
+
 function getHolidayList(session, val) {
     var date = "", month = "", holidaytype = "", currentmonth = "", commonentity = "", dateperiod = "";
     date = val.result.parameters.date;
@@ -419,11 +464,11 @@ function holidayList(session, data) {
 
 }
 
+
 function getCardsAttachmentsForLeavetype(data) {
     var attachments = [];
     var i;
-    console.log(data.length);
-
+   
 
     for (i = 0; i < data.length; i++) {
         var card = {
@@ -506,7 +551,11 @@ function getCardsAttachmentsForLeavetype(data) {
 
 function getCardsAttachmentsForApproval(data) {
     var attachments = [];
-    for (var i = 0; i < 10; i++) {
+    var i;
+    console.log(data.length);
+
+
+    for (i = 0; i < 10; i++) {
         var card = {
             'contentType': 'application/vnd.microsoft.card.adaptive',
             'content': {
@@ -523,12 +572,20 @@ function getCardsAttachmentsForApproval(data) {
                                     {
                                         "type": "Column",
                                         "items": [
+                                           
                                             {
                                                 "type": "TextBlock",
                                                 "size": "Medium",
                                                 "weight": "Bolder",
                                                 "text": data[i].EMPLOYEE_NAME,
                                                 "wrap": true
+                                            },
+                                            {
+                                                "type": "TextBlock",
+                                                "text": (i+1) + "/10",                                                               
+                                                "color": "black",
+                                                "weight": "bolder",
+                                                "size": "medium"
                                             }
                                         ],
                                         "width": "stretch"
@@ -583,7 +640,8 @@ function getCardsAttachmentsForApproval(data) {
 
 function getCardsAttachmentsForLeaveStatus(data) {
     var attachments = [];
-    for (var i = 0; i < 10; i++) {
+    var i;
+    for (i = 0; i < 10; i++) {
 
         var card = {
             'contentType': 'application/vnd.microsoft.card.adaptive',
@@ -607,6 +665,13 @@ function getCardsAttachmentsForLeaveStatus(data) {
                                                 "weight": "Bolder",
                                                 "text": data[i].DETAIL.replace('<br>', ''),
                                                 "wrap": true
+                                            },
+                                             {
+                                                "type": "TextBlock",
+                                                "text": (i+1) + "/10",                                                               
+                                                "color": "black",
+                                                "weight": "bolder",
+                                                "size": "medium"
                                             }
                                         ],
                                         "width": "stretch"
@@ -662,48 +727,42 @@ bot.dialog('RequestForReject', [
     matches: /RequestForReject/i
 });
 
+//travel Policy
+
+function setTravelPolicy(session, data) {
+    var actioncomp = data.result.actionIncomplete;
+    console.log("actioncomp", data);
+
+    if (actioncomp == false) {
+        var traveltype = data.result.parameters.traveltype;
+        console.log("sdfs",traveltype);
+        var mes = setTravelPolicyDetails(session,traveltype);
+        session.send(mes);       
+        session.endDialog();
+    } else {
+        session.beginDialog('setTravelPolicy');
+
+    }
+}
+
 bot.dialog('setTravelPolicy', [
     function (session, args, next) {
         builder.Prompts.choice(session, "        What I can help you with today?        ", "Air Travel|Car Rental|Personal Car|Taxis|Hotels|Meals", { listStyle: builder.ListStyle.button });
     },
     function (session, results) {
-
-        var requestData = {
-            "query": session.message.text,
-            "lang": "en",
-            "sessionId": "123456"
-        }
-
-        // Set the headers
-        var headers = { 'Content-Type': 'application/json; charset=utf-8', 'Authorization': 'Bearer ' + accessToken }
-
-        // Configure the request
-        var options = {
-            url: baseUrl + "query?v=20150910",
-            method: 'POST',
-            headers: headers,
-            json: requestData
-        }
-
-        Request(options, function (error, response, body) {
-            if (!error && response.statusCode == 200) {
-                console.log(response.body);
-                var actioncomp = response.body.result.actionIncomplete;
-                if(actioncomp === false){
-                    var traveltype = results.response.entity;
-                    setTravelPolicyDetails(session, traveltype);
-                }
-            }
-            else {
-                console.log("enddialog");
-                session.endDialog();
-            }
-        });//end           
+        var traveltype = results.response.entity;
+        var mes = setTravelPolicyDetails(session,traveltype);
+        startingid="";
+        session.send(mes);       
+        session.endDialog();
     }
+    
 ]);
 
-function setTravelPolicyDetails(session, data) {
+function setTravelPolicyDetails(session,data) {
+
     var traveltype = data;
+    console.log("sdfghjdsgfjhdsfgdsjhfgdsfgdsh",traveltype);
     var jsonLeavePolicy = {
         "traveltype": {
             "Air Travel": [
@@ -712,7 +771,7 @@ function setTravelPolicyDetails(session, data) {
                 { "parameter": "b) Result in total layover time not exceeding one hour." },
                 { "parameter": "c) Increase the one-way total elapsed trip time by no more than two and one-half hours." },
                 { "parameter": "d) Require no more than one interim stop each way." },
-                { "parameter": "3.2 Exceptions to this policy statement will be allowed with approval by the employeesâ€™ supervisor so that additional cost is authorized." },
+                { "parameter": "3.2 Exceptions to this policy statement will be allowed with approval by the employees’ supervisor so that additional cost is authorized." },
             ],
             "Car Rental": [
                 { "parameter": "4.1 Please note that car rental discounts are base on volume.  The travel agent will be able to tell you which rental agency we use at the time you make your reservations." },
@@ -720,16 +779,16 @@ function setTravelPolicyDetails(session, data) {
                 { "parameter": "4.3 Car rentals are generally the most expensive mode of transportation and should only be used when the nature of the trip or the locations of the customer being visited is such that the use of local transportation (i.e. taxis or limousines ) is not practical or would be more expensive." }
             ],
             "Personal Car": [
-                { "parameter": "Hmmm.. I guess I'm not trained to answer this question. I will try my best next time!" },
+                { "parameter": "Hmmm.. I guess I am not trained to answer this question. I will try my best next time!" },
             ],
             "Taxis": [
-                { "parameter": "Hmmm.. I guess I'm not trained to answer this question. I will try my best next time!" },
+                { "parameter": "Hmmm.. I guess I am not trained to answer this question. I will try my best next time!" },
             ],
             "Hotels": [
-                { "parameter": "Hmmm.. I guess I'm not trained to answer this question. I will try my best next time!" },
+                { "parameter": "Hmmm.. I guess I am not trained to answer this question. I will try my best next time!" },
             ],
             "Meals": [
-                { "parameter": "Hmmm.. I guess I'm not trained to answer this question. I will try my best next time!" },
+                { "parameter": "Hmmm.. I guess I am not trained to answer this question. I will try my best next time!" },
             ]
         }
     }
@@ -739,12 +798,11 @@ function setTravelPolicyDetails(session, data) {
         var result = "";
         var leavePolicy = "**" + traveltype + "**" + "\r\n";
         var val = jsonLeavePolicy.traveltype[traveltype];
+        console.log("length",val.length);
         for (i = 0; i < val.length; i++) {
             leavePolicy = "\r\n" + leavePolicy + "\r\n" + val[i].parameter;
-        }
-
-        session.send(leavePolicy);
-        session.endDialog();
-    }
-    session.endDialog();
+        }        
+    }  
+    console.log("leavepolicy",leavePolicy);
+    return leavePolicy;
 }
