@@ -337,9 +337,9 @@ function coformationLeaveSubmit(session, data) {
 
 bot.dialog('applyforleave', [
     function (session, args, next) {
-        var textmessage = "Your leave request for " + session.conversationData.leavetype + "<br/> Start Date: **" + session.conversationData.formdate + "** </ br> To Date: **" + session.conversationData.todate + "**";
+        var textmessage = "Your leave request for " + session.conversationData.leavetype + "<br/> Start Date: **" + session.conversationData.formdate + "** <br/> To Date: **" + session.conversationData.todate + "**";
         // session.send(textmessage);
-        builder.Prompts.confirm(session, textmessage + " \r\n will be processed? (Y/N)");
+        builder.Prompts.confirm(session, textmessage + " <br/> will be processed? (Y/N)");
     },
     function (session, results) {
         if (results.response == true) {
@@ -796,11 +796,11 @@ function setTravelPolicyDetails(session,data) {
 
         var value = "";
         var result = "";
-        var leavePolicy = "**" + traveltype + "**" + "\r\n";
+        var leavePolicy = "**" + traveltype + "**" + "<br/>";
         var val = jsonLeavePolicy.traveltype[traveltype];
         console.log("length",val.length);
         for (i = 0; i < val.length; i++) {
-            leavePolicy = "\r\n" + leavePolicy + "\r\n" + val[i].parameter;
+            leavePolicy = "<br/>" + leavePolicy + "<br/>" + val[i].parameter;
         }        
     }  
     console.log("leavepolicy",leavePolicy);
