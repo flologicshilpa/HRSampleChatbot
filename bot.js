@@ -13,7 +13,8 @@ var Request = require("request");
 var i, intent = "";
 
 var accessToken = 'a8be5eed29a84393b073ec02b5cd5e79';  //Replace access token here
-var baseUrl = "https://api.api.ai/v1/";
+//var baseUrl = "https://api.api.ai/v1/";
+var baseUrl= "https://api.dialogflow.com/v1/";
 var baseWebUrl = "https://flologicbots.com:105/api/";
 var empCode = "78010182";
 var startingid="";
