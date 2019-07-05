@@ -800,7 +800,7 @@ function setTravelPolicyDetails(session,data) {
         var val = jsonLeavePolicy.traveltype[traveltype];
         console.log("length",val.length);
         for (i = 0; i < val.length; i++) {
-            leavePolicy = "<br/>" + leavePolicy + "<br/>" + val[i].parameter;
+            leavePolicy = leavePolicy + "<br/>" + val[i].parameter;
         }        
     }  
     console.log("leavepolicy",leavePolicy);
