@@ -337,7 +337,7 @@ function coformationLeaveSubmit(session, data) {
 
 bot.dialog('applyforleave', [
     function (session, args, next) {
-        var textmessage = "Your leave request for " + session.conversationData.leavetype + "</ br> Start Date: **" + session.conversationData.formdate + "** </ br> To Date: **" + session.conversationData.todate + "**";
+        var textmessage = "Your leave request for " + session.conversationData.leavetype + "<br/> Start Date: **" + session.conversationData.formdate + "** </ br> To Date: **" + session.conversationData.todate + "**";
         // session.send(textmessage);
         builder.Prompts.confirm(session, textmessage + " \r\n will be processed? (Y/N)");
     },
